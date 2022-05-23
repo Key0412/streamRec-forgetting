@@ -30,7 +30,7 @@ class ISGD(Model):
         self.random_seed = random_seed
         np.random.seed(random_seed)
         self._InitModel()
-
+        
 
     def _InitModel(self):
         self.ResetModel()
@@ -97,35 +97,55 @@ class ISGD(Model):
         """
         return np.inner(self.user_factors[user_id], self.item_factors[item_id])
 
-    def Recommend(self, user, n: int = -1, exclude_known_items: bool = True, sort_list: bool = True):
+
+    def Recommend(self, user, n: int = -1, exclude_known_items: bool = True, candidates: set = {}, default_user: str = 'none'):
         """
         Returns an list of tuples in the form (item_id, score), ordered by score.
 
         Keyword arguments:
         user_id -- The ID of the user
         item_id -- The ID of the item
+        n -- number of recommendations. default returns all items sorted by score.
+        exclude_known_items -- boolean, exclude known items from recommendation
+        candidates -- dictionary, ?
+        default_user -- str. One of: random, average, or median. If user is not present (new user) user factors are generated.
         """
+
+        recs = []
 
         user_id = self.data.GetUserInternalId(user)
 
         if user_id == -1:
-            return []
-
-        recs = []
-
-        p_u = self.user_factors[user_id]
+            if default_user == 'random':
+                p_u = np.random.normal(0.0, 0.1, self.num_factors)
+            if default_user == 'average':
+                p_u = np.mean(self.user_factors, axis=0)
+            if default_user == 'median':
+                p_u = np.median(self.user_factors, axis=0)
+            else: # none
+                return []
+        else:
+            p_u = self.user_factors[user_id]
+        
         scores = np.abs(1 - np.inner(p_u, self.item_factors))
 
         recs = np.column_stack((self.data.itemset, scores))
 
-        if exclude_known_items:
+        if exclude_known_items and user_id != -1:
             user_items = self.data.GetUserItems(user_id)
             recs = np.delete(recs, user_items, 0)
 
-        if sort_list:
-            recs = recs[np.argsort(recs[:, 1], kind = 'heapsort')]
+        if len(candidates):
+            # TODO: testar código
+            candidates_internal = self.data.GetItemInternalIds(candidates)
+            condition = np.isin(recs[:,0].astype(int), candidates_internal)
+            recs = recs[condition]
 
         if n == -1 or n > len(recs) :
             n = len(recs)
+        else:
+            recs = recs[np.argpartition(recs[:,1], n-1)[:n]]
 
-        return recs[:n]
+        recs = recs[np.argsort(recs[:,1])]
+
+        return recs
