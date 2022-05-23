@@ -8,12 +8,23 @@ import time
 class EvalHoldout:
     # TODO: Documentation
 
-    def __init__(self, model: Model, holdout: ImplicitData, metrics = ["Recall@N"], N_recommendations=20):
+    def __init__(self, model: Model, holdout: ImplicitData, metrics: list = ["Recall@N"], N_recommendations: int = 20, default_user: str = 'none'):
+        '''
+        Class used to evaluate tabular data constructed from sampled stream data.
+
+        Keyword arguments:
+        model -- model to be evaluated
+        holdout -- tabular data constructed from sampled stream data. Instance of ImplicitData.
+        metrics -- only Recall@N for now.
+        N_recommendations -- number of recommendations to be used in computing the metric.
+        default_user -- str. One of: random, average, or median. If user is not present in model (new user) user factors are generated.
+        '''
         # TODO: Input checks
         self.model = model
         self.holdout = holdout
         self.metrics = metrics
         self.N_recommendations = N_recommendations
+        self.default_user = default_user
 
 
     def EvaluateTime(self):
@@ -33,7 +44,7 @@ class EvalHoldout:
 
             if iid not in self.model.data.GetUserItems(uid, False):
                 start_recommend = time.time()
-                reclist = self.model.Recommend(user = uid, n = self.N_recommendations) # EXPERIMENTAR COM 30 ou 50
+                reclist = self.model.Recommend(user = uid, n = self.N_recommendations, default_user=self.default_user) # Experimentar com outro default_user???
                 end_recommend = time.time()
                 time_recommend.append(end_recommend - start_recommend)
 
@@ -57,11 +68,7 @@ class EvalHoldout:
 
         for i in range(self.holdout.size):
             uid, iid = self.holdout.GetTuple(i) # get external IDs
-            # if iid not in self.model.data.GetUserItems(uid, False): # recomendar 20 itens se item não foi visto pelo usuário 
-
-            # UTILIZADOR EXISTE NO MODELO ?
-
-            reclist = self.model.Recommend(user = uid, n = self.N_recommendations, exclude_known_items = exclude_known_items) # EXPERIMENTAR COM 30 ou 50
+            reclist = self.model.Recommend(user = uid, n = self.N_recommendations, exclude_known_items = exclude_known_items, default_user=self.default_user) # Experimentar com outro default_user???
             results[metric].append(self.__EvalPoint(iid, reclist))
 
         return results

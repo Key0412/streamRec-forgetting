@@ -108,7 +108,7 @@ class ISGD(Model):
         n -- number of recommendations. default returns all items sorted by score.
         exclude_known_items -- boolean, exclude known items from recommendation
         candidates -- dictionary, ?
-        default_user -- str. One of: random, average, or median. If user is not present (new user) user factors are generated.
+        default_user -- str. One of: random, average, or median. If user is not present in model (new user) user factors are generated.
         """
 
         recs = []
