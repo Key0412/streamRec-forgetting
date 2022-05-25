@@ -18,7 +18,8 @@ def lineplot_recallxholdout(df,
     plt.ylabel('Recall@20')
     plt.legend(bbox_to_anchor=(1.0,1), loc="upper left", labels=[f'model: T{model+1}' for model in range( df.shape[0] )])
     plt.title(title)
-    plt.savefig(filepath);
+    if filepath:
+        plt.savefig(filepath);
 
 def recall_heatmap(df,
     title='Recall@20 for checkpoint models across Holdouts - model - data',
@@ -30,4 +31,5 @@ def recall_heatmap(df,
     plt.ylabel('model')
     plt.xlabel('holdout')
     plt.title(title)
-    plt.savefig(filepath);
+    if filepath:
+        plt.savefig(filepath);
