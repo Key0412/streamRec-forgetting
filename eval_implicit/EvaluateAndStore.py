@@ -15,14 +15,13 @@ class EvaluateAndStore(EvalPrequential):
         # self.holdouts = [ImplicitData(user_list=[], item_list=[]) for _ in range(self.n_holdouts)]
         self.holdouts = [[] for _ in range(n_holdouts)]
         self.model_checkpoints = []
-        self.results_matrix = np.zeros(shape=(n_holdouts, n_holdouts))
 
     def EvaluateAndStore(self, start_eval = 0, count = 0, store_only=True, default_user='none'): # , interleaved = 1): 
         '''
         Prequential evaluation of recommendation model.
         A number of 'n_holdouts' model states and holdout test sets are stored
         
-        start_eval - from which ui interaction should the evaluation start (interactions before the 100th are used only for incremental training)*
+        start_eval - from which ui interaction should the prequential evaluation start (interactions before the 100th are used only for incremental training)*
         count - max number of ui interactions to evaluate on (stream.size at max)**
         store_only - False if prequential evaluation is to be made (recommendation + comparison steps), True if only storage is to be carried out.
         default_user - str. One of: random, average, or median. If user is not present in model (new user) user factors are generated.
@@ -42,13 +41,11 @@ class EvaluateAndStore(EvalPrequential):
         checkpoint_size = (self.data.size - max(min_start, start_eval))//self.n_holdouts
         checkpoint_count = [0, 0] # pos 0 - used to track the checkpoint. pos 1 - used to count how many examples were seen.
         for i in range(count): # **
+            checkpoint_count[1] += 1
             uid, iid = self.data.GetTuple(i) # get external IDs
-            
-            if i >= start_eval and i >= min_start: # *, ***
-                checkpoint_count[1] += 1
-                if not store_only:
-                    reclist = self.model.Recommend(user = uid, n = self.N_recommendations, default_user=default_user) # recommend N_recommendations items to uid
-                    results[metric].append(self._EvalPrequential__EvalPoint(iid, reclist)) # evaluate recommendations before updating - Recall@20 | careful with name mangling
+            if i >= start_eval and i >= min_start and not store_only: # *, ***
+                reclist = self.model.Recommend(user = uid, n = self.N_recommendations, default_user=default_user) # recommend N_recommendations items to uid
+                results[metric].append(self._EvalPrequential__EvalPoint(iid, reclist)) # evaluate recommendations before updating - Recall@20 | careful with name mangling
 
             # store interaction in the holdout for this checkpoint with prob 0.1 if interaction is not yet in the holdout for this checkpoint
             if np.random.uniform(0, 1) >= 0.9 and ( [uid, iid] not in self.holdouts[checkpoint_count[0]] ):
@@ -79,6 +76,7 @@ class EvaluateAndStore(EvalPrequential):
         exclude_known_items -- boolean, exclude known items from recommendation
         default_user -- str. One of: random, average, or median. If user is not present in model (new user) user factors are generated.
         '''
+        self.results_matrix = np.zeros(shape=(self.n_holdouts, self.n_holdouts))
         metric = self.metrics[0]
         # results_matrix = np.zeros(shape=(eval.n_holdouts, eval.n_holdouts))
         for i, hd in enumerate( self.holdouts ):
