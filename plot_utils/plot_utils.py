@@ -1,3 +1,4 @@
+from eval_implicit import EvaluateAndStore
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -33,3 +34,16 @@ def recall_heatmap(df,
     plt.title(title)
     if filepath:
         plt.savefig(filepath);
+
+def plot_n_users_per_bucket(eval_object:EvaluateAndStore, dataset_name:str, filename:str=None):
+    n_users = len( eval_object.data.userset )
+    n_users_bucket = pd.Series( [len( bucket.userset ) for bucket in eval_object.holdouts] )
+    n_users_bucket = n_users_bucket.reset_index()
+    n_users_bucket.columns = ['Bucket', 'N_users']
+    n_users_bucket['Bucket'] = n_users_bucket['Bucket']+1
+    plt.figure(figsize=(10,5))
+    sns.barplot(x='Bucket', y='N_users', data=n_users_bucket, color='b', label='users per bucket')
+    sns.lineplot(data=np.repeat(n_users, n_users_bucket.shape[0]), label='total users', color='orange')
+    plt.title(f'Users per bucket - {dataset_name}');
+    if filename:
+        plt.savefig(f'images/user_bucket_analysis/{filename}')
