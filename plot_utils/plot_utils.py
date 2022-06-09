@@ -47,3 +47,15 @@ def plot_n_users_per_bucket(eval_object:EvaluateAndStore, dataset_name:str, file
     plt.title(f'Users per bucket - {dataset_name}');
     if filename:
         plt.savefig(f'images/user_bucket_analysis/{filename}')
+
+def plot_bucket_size(eval_object, dataset_name, filename=None):
+    bucket_size = pd.Series( [bucket.size for bucket in eval_object.holdouts] )
+    bucket_size = bucket_size.reset_index()
+    bucket_size.columns = ['Bucket', 'Size']
+    bucket_size['Bucket'] = bucket_size['Bucket']+1
+    plt.figure(figsize=(10,5))
+    sns.barplot(x='Bucket', y='Size', data=bucket_size, color='b')
+    # sns.lineplot(data=np.repeat(n_users, n_users_bucket.shape[0]), label='total users', color='orange')
+    plt.title(f'Bucket size - {dataset_name}')
+    if filename:
+        plt.savefig(f'images/user_bucket_analysis/{filename}')
