@@ -49,9 +49,13 @@ class EvaluateAndStore(EvalPrequential):
 
             # store interaction in the holdout for this checkpoint with prob 0.1 if interaction is not yet in the holdout for this checkpoint
             if np.random.uniform(0, 1) >= 0.9 and ( [uid, iid] not in self.holdouts[checkpoint_count[0]] ):
+                if uid in np.arange(26):
+                    print( uid, 'stored in', checkpoint_count[0])
                 self._StoreInteraction(uid, iid, n_checkpoint=checkpoint_count[0]) 
             # else, use interaction for training
             else:
+                if uid in np.arange(26):
+                    print( uid, 'used in training')
                 self.model.IncrTrain(uid, iid) # perform incremental training
 
             if (checkpoint_count[1] >= checkpoint_size): # if the number of interactions exceedes the size of each checkpoint interval
