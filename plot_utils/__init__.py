@@ -1,1 +1,1 @@
-from .plot_utils import lineplot_recallxholdout, recall_heatmap, plot_n_users_per_bucket, plot_bucket_size
+from .plot_utils import lineplot_recallxholdout, recall_heatmap
