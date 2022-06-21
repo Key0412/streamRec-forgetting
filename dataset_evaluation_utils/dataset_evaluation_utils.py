@@ -179,10 +179,10 @@ def get_frequent_user_statistics(interactions_df, frequent_users_list):
         holdout_users_per_interval - number of frequent users with at least 1 interactions, in each interval
         median_interactions_per_interval - median number of user interactions, in each interval
     '''
-    # this is the number of users that CAN be used for testing (holdouts) in each interval
-    # ** they have at least 2 interactions in these intervals - 1 for training, 1 for testing.
+    # this is the number of users that MAY be used for testing (holdouts) in each interval - they got to be seen previously too.
+    # ** they have at least 1 interactions in these intervals - to be used for testing, if user has been seen.
     holdout_users_per_interval = (interactions_df.loc[frequent_users_list] >= 1).sum()
-    holdout_users_per_interval.name = 'possible_holdout_users'
+    holdout_users_per_interval.name = 'freq_users_at_least_1_interaction'
     # median of user interactions per interval
     median_interactions_per_interval = interactions_df.loc[frequent_users_list].median(axis=0)
     median_interactions_per_interval.name = 'median_freq_user_interactions'
@@ -204,7 +204,7 @@ def plot_users_per_fixed_bucket(data, user_col, interval_start, interval_end):
     '''
     unique_users_per_bucket = [data.iloc[i:j][user_col].nunique() for i, j in zip(interval_start, interval_end) ]
     sns.barplot(x=np.arange(1, len( interval_start )+1), y=unique_users_per_bucket, color='blue')
-    plt.hlines(y=data[user_col].nunique(), xmin=0, xmax=len( interval_start ), label='Number of unique users', color='red');
+    plt.hlines(y=data[user_col].nunique(), xmin=0, xmax=len( interval_start )-1, label='Number of unique users', color='red');
     plt.title('Users per bucket')
     plt.legend(loc='center right')
 
@@ -226,14 +226,18 @@ def get_fixed_buckets_info(data, user_col, interval_start, interval_end):
 
     user_bucket_interactions = pd.DataFrame(user_bucket_interactions).T
 
-    dates_fixed_buckets = { d:np.zeros(len(interval_start)) for d in data['date'].unique() }
-    for b, (i, j) in enumerate( zip(interval_start, interval_end) ):
-        for d in data['date'].unique():
-            dates_fixed_buckets[d][b] += ( data.iloc[i:j]['date'] == d ).sum()
-    dates_fixed_buckets_df = pd.DataFrame(dates_fixed_buckets).T
-    columns = ['date'] + [f'bucket_{i}' for i in range(dates_fixed_buckets_df.shape[1])]
-    dates_fixed_buckets_df = dates_fixed_buckets_df.reset_index()
-    dates_fixed_buckets_df.columns = columns
+    try:
+        dates_fixed_buckets = { d:np.zeros(len(interval_start)) for d in data['date'].unique() }
+        for b, (i, j) in enumerate( zip(interval_start, interval_end) ):
+            for d in data['date'].unique():
+                dates_fixed_buckets[d][b] += ( data.iloc[i:j]['date'] == d ).sum()
+        dates_fixed_buckets_df = pd.DataFrame(dates_fixed_buckets).T
+        columns = ['date'] + [f'bucket_{i}' for i in range(dates_fixed_buckets_df.shape[1])]
+        dates_fixed_buckets_df = dates_fixed_buckets_df.reset_index()
+        dates_fixed_buckets_df.columns = columns
+    except:
+        print("No 'date' columns")
+        return user_bucket_interactions
 
     return user_bucket_interactions, dates_fixed_buckets_df
 
@@ -264,7 +268,7 @@ def plot_timestamps_per_bucket(dates_fixed_buckets_df):
     '''
     barplots of timestamps presence per bucket
     '''
-    fig, ax = plt.subplots(1, dates_fixed_buckets_df.shape[1]-1, figsize=(20, 10), sharey=True)
+    fig, ax = plt.subplots(1, dates_fixed_buckets_df.shape[1]-1, figsize=(25, 10), sharey=True, sharex=True)
     for i, bckt in enumerate(dates_fixed_buckets_df.columns[1:]):
         sns.barplot(x=bckt, y='date', data=dates_fixed_buckets_df.reset_index(), ax=ax[i])
 
