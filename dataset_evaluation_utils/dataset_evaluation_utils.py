@@ -176,12 +176,12 @@ def get_frequent_user_statistics(interactions_df, frequent_users_list):
     returns series with statistics from dataframe with user interactions per quarter or semester, or buckets.
     interactions_df is either user_trimestre_interactions, user_semestre_interactions, or user_bucket_interactions - outputs of get_interactions_info and get_fixed_buckets_info
     returns:
-        holdout_users_per_interval - number of frequent users with at least 2 interactions, in each interval
+        holdout_users_per_interval - number of frequent users with at least 1 interactions, in each interval
         median_interactions_per_interval - median number of user interactions, in each interval
     '''
     # this is the number of users that CAN be used for testing (holdouts) in each interval
     # ** they have at least 2 interactions in these intervals - 1 for training, 1 for testing.
-    holdout_users_per_interval = (interactions_df.loc[frequent_users_list] >= 2).sum()
+    holdout_users_per_interval = (interactions_df.loc[frequent_users_list] >= 1).sum()
     holdout_users_per_interval.name = 'possible_holdout_users'
     # median of user interactions per interval
     median_interactions_per_interval = interactions_df.loc[frequent_users_list].median(axis=0)
@@ -203,8 +203,8 @@ def plot_users_per_fixed_bucket(data, user_col, interval_start, interval_end):
     barplot of unique users per bucket
     '''
     unique_users_per_bucket = [data.iloc[i:j][user_col].nunique() for i, j in zip(interval_start, interval_end) ]
-    sns.barplot(x=np.arange(1, len( interval_start )), y=unique_users_per_bucket, color='blue')
-    plt.hlines(y=data[user_col].nunique(), xmin=0, xmax=4, label='Number of unique users', color='red');
+    sns.barplot(x=np.arange(1, len( interval_start )+1), y=unique_users_per_bucket, color='blue')
+    plt.hlines(y=data[user_col].nunique(), xmin=0, xmax=len( interval_start ), label='Number of unique users', color='red');
     plt.title('Users per bucket')
     plt.legend(loc='center right')
 
