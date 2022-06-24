@@ -26,7 +26,7 @@ def recall_heatmap(df,
     title='Recall@20 for checkpoint models across Holdouts - model - data',
     filepath='images/heatmaps/..'):
     plt.figure(figsize=(15, 10))
-    x_t = np.arange(0,20)
+    x_t = np.arange(0, df.shape[0])
     labels=[str(i+1) for i in x_t]
     sns.heatmap(df, vmin=0, vmax=df.max().max(), annot=True, fmt='0.2f', linewidths=.1, cmap='Spectral_r', xticklabels=labels, yticklabels=labels)
     plt.ylabel('model')

@@ -26,7 +26,7 @@ class EvaluateHoldouts():
                 uid, iid = bucket.GetTuple(i) # get external IDs
                 self.model.IncrTrain(uid, iid) # perform incremental training
 
-            if b > cold_start_buckets:
+            if b >= cold_start_buckets:
                 self._MakeCheckpoint() # store model
     
     def EvaluateHoldouts(self, exclude_known_items:bool=True, default_user:str='none'):
