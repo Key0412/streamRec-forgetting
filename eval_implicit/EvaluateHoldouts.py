@@ -6,11 +6,10 @@ import copy
 
 class EvaluateHoldouts():
 
-    def __init__(self, model: Model, buckets, holdouts, N_recommendations=20):
+    def __init__(self, model: Model, buckets, holdouts, ):
         self.model = model
         self.buckets = buckets
         self.holdouts = holdouts
-        self.N_recommendations = N_recommendations
         self.metrics = ["Recall@N"]
         self.model_checkpoints = []
         self._IncrementalTraining()
@@ -29,7 +28,7 @@ class EvaluateHoldouts():
             if b >= cold_start_buckets:
                 self._MakeCheckpoint() # store model
     
-    def EvaluateHoldouts(self, exclude_known_items:bool=True, default_user:str='none'):
+    def EvaluateHoldouts(self, N_recommendations=20, exclude_known_items:bool=True, default_user:str='none'):
         '''
         exclude_known_items -- boolean, exclude known items from recommendation
         default_user -- str. One of: random, average, or median. If user is not present in model (new user) user factors are generated.
@@ -38,8 +37,10 @@ class EvaluateHoldouts():
         metric = self.metrics[0]
         for i, hd in enumerate( self.holdouts ):
             for j, model in enumerate( self.model_checkpoints ):
-                eh_instance = EvalHoldout(model=model, holdout=hd, metrics=[metric], N_recommendations=self.N_recommendations, default_user=default_user)
-                result = sum( eh_instance.Evaluate(exclude_known_items=exclude_known_items)[metric]) / hd.size
+                eh_instance = EvalHoldout(model=model, holdout=hd, metrics=[metric], N_recommendations=N_recommendations, default_user=default_user)
+                result = eh_instance.Evaluate(exclude_known_items=exclude_known_items)[metric]
+                result = sum( result ) / len(result)
+                n_not_seen = hd.size - len(result) # if user was not seen, its not added to recall. May be needed to store difference.
                 self.results_matrix[i, j] = result
     
     def _MakeCheckpoint(self):
