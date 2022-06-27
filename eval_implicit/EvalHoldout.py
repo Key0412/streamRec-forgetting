@@ -68,8 +68,9 @@ class EvalHoldout:
 
         for i in range(self.holdout.size):
             uid, iid = self.holdout.GetTuple(i) # get external IDs
-            reclist = self.model.Recommend(user = uid, n = self.N_recommendations, exclude_known_items = exclude_known_items, default_user=self.default_user) # Experimentar com outro default_user???
-            results[metric].append(self.__EvalPoint(iid, reclist))
+            reclist = self.model.Recommend(user = uid, n = self.N_recommendations, exclude_known_items = exclude_known_items, default_user=self.default_user)
+            if reclist: # if user has been seen by model, add result
+                results[metric].append(self.__EvalPoint(iid, reclist))
 
         return results
 
@@ -79,5 +80,5 @@ class EvalHoldout:
             return 0
         for metric in self.metrics:
             if metric == "Recall@N":
-                result = int(item_id in reclist[:self.N_recommendations,0]) # EXPERIMENTAR COM 30 ou 50
+                result = int(item_id in reclist[:self.N_recommendations,0])
         return result
