@@ -5,7 +5,13 @@ import numpy as np
 import copy
 
 class EvaluateHoldouts():
-
+    '''
+    Instanciation:\n
+        \tIncremental training of recommendation model.\n
+        \tStore model checkpoints at the end of each bucket.\n
+    Methods:\n
+        \tEvaluateHoldouts to evaluate models over holdouts - recall@N_recommendations. Known items are excluded by default.
+    '''
     def __init__(self, model: Model, buckets, holdouts, ):
         self.model = model
         self.buckets = buckets
@@ -31,7 +37,7 @@ class EvaluateHoldouts():
     def EvaluateHoldouts(self, N_recommendations=20, exclude_known_items:bool=True, default_user:str='none'):
         '''
         exclude_known_items -- boolean, exclude known items from recommendation
-        default_user -- str. One of: random, average, or median. If user is not present in model (new user) user factors are generated.
+        default_user -- str. One of: none, random, average, or median. If user is not present in model (future user) user factors are generated. If none, then no recommendations are made (user wont count for recall)
         '''
         self.results_matrix = np.zeros( shape=( len( self.holdouts ), len( self.holdouts ) ) )
         metric = self.metrics[0]
