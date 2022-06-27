@@ -69,9 +69,10 @@ class EvalHoldout:
         for i in range(self.holdout.size):
             uid, iid = self.holdout.GetTuple(i) # get external IDs
             reclist = self.model.Recommend(user = uid, n = self.N_recommendations, exclude_known_items = exclude_known_items, default_user=self.default_user)
-            if reclist: # if user has been seen by model, add result
+            if len(reclist): # if user has been seen by model, add result
                 results[metric].append(self.__EvalPoint(iid, reclist))
-
+            else:
+                print(uid, 'user not seen')
         return results
 
     def __EvalPoint(self, item_id, reclist):
