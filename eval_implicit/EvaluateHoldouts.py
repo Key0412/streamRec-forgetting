@@ -45,8 +45,8 @@ class EvaluateHoldouts():
             for j, model in enumerate( self.model_checkpoints ):
                 eh_instance = EvalHoldout(model=model, holdout=hd, metrics=[metric], N_recommendations=N_recommendations, default_user=default_user)
                 result = eh_instance.Evaluate(exclude_known_items=exclude_known_items)[metric]
-                result = sum( result ) / len(result)
                 n_not_seen = hd.size - len(result) # if user was not seen, its not added to recall. May be needed to store difference.
+                result = sum( result ) / len(result)                
                 self.results_matrix[i, j] = result
     
     def _MakeCheckpoint(self):
