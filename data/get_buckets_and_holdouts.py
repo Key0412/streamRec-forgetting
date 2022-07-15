@@ -1,6 +1,7 @@
 from .implicit_data import ImplicitData
 
 import pandas as pd
+import numpy as np
 
 def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_users:list, interval_type:str=None, intervals:list=None, cold_start_buckets:int=1):
     '''
@@ -53,7 +54,9 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
                         frequent_users_seen.append(u)
             holdout = b.loc[ last_interaction_idx ] # get last interactions as holdout
             holdout.reset_index(drop=True, inplace=True) # reset index required - implicitdata indexes user by their previous index
-            holdout = ImplicitData(user_list=holdout[user_col], item_list=holdout[item_col]) # convert holdout to ImplicitData
+# temp
+            # holdout = ImplicitData(user_list=holdout[user_col], item_list=holdout[item_col]) # convert holdout to ImplicitData
+
             holdouts.append(holdout) # append to holdouts
             bucket = b.drop( index = last_interaction_idx) # remove last interactions from bucket
         else: # if bucket belongs to 'cold_start_buckets'
@@ -63,6 +66,32 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
                 if (idx.sum() > 0):
                     frequent_users_seen.append(u)
         bucket.reset_index(drop=True, inplace=True) # reset index required - implicitdata indexes user by their previous index
-        buckets[i] = ImplicitData(user_list=bucket[user_col], item_list=bucket[item_col]) # convert bucket to ImplicitData and store
+#temp
+        # buckets[i] = ImplicitData(user_list=bucket[user_col], item_list=bucket[item_col]) # convert bucket to ImplicitData and store
+
+    # a verification is required to remove any items in the holdouts from the buckets
+    # i.e. items that are in holdouts can never be used for training
+    # can this be done while the holdouts and buckets are created?
+
+    # concatenate all holdouts and set interaction tuple as index.
+    holdouts_df = pd.concat( holdouts )[[user_col, item_col]].set_index([user_col, item_col])
+
+    # for each bucket:
+    #   set interaction tuple as index 
+    #   perform a inner join with the holdouts dataframe.
+    #   get the unique interactions that occur in both (i.e. resulting unique indexes)
+    #   append these interactions to the respective holdout
+    #   remove these interactions from the bucket
+
+    for i, b in enumerate(buckets):
+        temp_b = b.set_index([user_col, item_col])
+        common_interactions = temp_b.join(holdouts_df, how='inner').index
+        common_interactions = np.unique( common_interactions )
+        # if bucket[i] is a cold start bucket, the interactions are removed and do not enter any holdout - is it ok?
+        if i >= cold_start_buckets:
+            holdout = holdouts[i-cold_start_buckets].append(temp_b.loc[ common_interactions ].reset_index()).sort_values(by='timestamp').reset_index(drop=True)
+            holdouts[i-cold_start_buckets] = ImplicitData(user_list=holdout[user_col], item_list=holdout[item_col]) # convert holdout to ImplicitData
+        temp_b = temp_b.drop(index=common_interactions).reset_index()
+        buckets[i] = ImplicitData(user_list=temp_b[user_col], item_list=temp_b[item_col]) # convert bucket to ImplicitData and store
 
     return buckets, holdouts
