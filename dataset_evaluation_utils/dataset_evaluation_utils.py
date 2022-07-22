@@ -15,7 +15,7 @@ sns.set_style('whitegrid')
 # Dataset evaluation
 
 # timewise evaluation
-def get_interactions_info(data, user_col):
+def get_interactions_info(data, user_col, quarter_info=False, semester_info=False):
     '''
     Input is data dataframe, which contains a 'date' column.
     user_col is the name of the column that contains users IDs.
@@ -33,60 +33,94 @@ def get_interactions_info(data, user_col):
     # https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases
     # https://stackoverflow.com/questions/69714505/how-can-generate-trimester-dates-in-python
     start_ts, end_ts = Timestamp(user_month_interactions['date'].unique()[0]), Timestamp(user_month_interactions['date'].unique()[-1])
-    starts = date_range(start_ts, end_ts - MonthEnd(3), freq='3M') + MonthBegin(-1)
-    # starts = date_range(start_ts, end_ts, freq='3M') + MonthBegin(-1)
-    ends = date_range(start_ts + MonthEnd(3), end_ts, freq='3M')
-    trimestres = list(zip(starts, ends))
-
-    starts = date_range(start_ts, end_ts - MonthEnd(6), freq='6M') + MonthBegin(-1)
-    ends = date_range(start_ts + MonthEnd(6), end_ts, freq='6M')
-    semestres = list(zip(starts, ends))
+    
+    if quarter_info:
+        starts = date_range(start_ts, end_ts - MonthEnd(3), freq='3M') + MonthBegin(-1)
+        # starts = date_range(start_ts, end_ts, freq='3M') + MonthBegin(-1)
+        ends = date_range(start_ts + MonthEnd(3), end_ts, freq='3M')
+        trimestres = list(zip(starts, ends))
+        user_trimestre_interactions = dict()
+    
+    if semester_info:
+        starts = date_range(start_ts, end_ts - MonthEnd(6), freq='6M') + MonthBegin(-1)
+        ends = date_range(start_ts + MonthEnd(6), end_ts, freq='6M')
+        semestres = list(zip(starts, ends))
+        user_semestre_interactions = dict()
 
     # verifying user presence in months, quarter, and semester
     user_presence_percentage = []
     # user_presence_map = dict()
-    user_trimestre_interactions = dict()
-    user_semestre_interactions = dict()
+    c = 0
     for u in user_month_interactions[user_col].unique():
+        progress = round( 100*( c/user_month_interactions[user_col].nunique() ), 2 )
+        if progress%5==0:
+            print( progress, '%' )
+        c+=1
+        
         uidx = user_month_interactions[user_col] == u
         month_presence = user_month_interactions.loc[uidx, 'date'].nunique() / user_month_interactions['date'].nunique()
         
-        trimestre_presence = np.repeat(False, len(trimestres)+1 )
-        semestre_presence = np.repeat(False, len(semestres)+1 )
-
-        trimestre_count = np.zeros( len( trimestres )+1 )
-        semestre_count = np.zeros( len( semestres )+1 )
-
-        for udt in user_month_interactions.loc[uidx, 'date']:
-
-            idx = np.where( [ t[0]<=Timestamp( udt )<=t[1] for t in trimestres ] + [Timestamp( udt ) > trimestres[-1][1]] )[0]
-            trimestre_presence[idx] = True
-            trimestre_count[idx] += 1
-
-            idx = np.where( [ t[0]<=Timestamp( udt )<=t[1] for t in semestres ] + [Timestamp( udt ) > semestres[-1][1]] )[0]
-            semestre_presence[idx] = True
-            semestre_count[ idx ] += 1
-
-        user_trimestre_interactions[u] = trimestre_count
-        user_semestre_interactions[u] = semestre_count
+        if quarter_info:
+            trimestre_presence = np.repeat(False, len(trimestres)+1 )
+            trimestre_count = np.zeros( len( trimestres )+1 )
+        
+        if semester_info:
+            semestre_presence = np.repeat(False, len(semestres)+1 )
+            semestre_count = np.zeros( len( semestres )+1 )
+        
+        if quarter_info or semester_info:
+            for udt in user_month_interactions.loc[uidx, 'date']:
+                if quarter_info:
+                    idx = np.where( [ t[0]<=Timestamp( udt )<=t[1] for t in trimestres ] + [Timestamp( udt ) > trimestres[-1][1]] )[0]
+                    trimestre_presence[idx] = True
+                    trimestre_count[idx] += 1
+                if semester_info:
+                    idx = np.where( [ t[0]<=Timestamp( udt )<=t[1] for t in semestres ] + [Timestamp( udt ) > semestres[-1][1]] )[0]
+                    semestre_presence[idx] = True
+                    semestre_count[ idx ] += 1
+                    
+            if quarter_info: user_trimestre_interactions[u] = trimestre_count
+            if semester_info: user_semestre_interactions[u] = semestre_count
         
         # storing trues and falses for each user ( here, we know exactly where user appears)
         # user_presence_map[u] = [user_month_interactions.loc[uidx, 'date'].unique(), trimestre_presence, semestre_presence]
         # storing user occurence in % of intervals they occur
-        user_presence_percentage.append(
-            [u, month_presence, sum(trimestre_presence)/len(trimestre_presence), sum(semestre_presence)/len(semestre_presence)] )
+        if quarter_info and semester_info:
+            user_presence_percentage.append(
+                [u, month_presence, sum(trimestre_presence)/len(trimestre_presence), sum(semestre_presence)/len(semestre_presence)] )
+            cols = ['UserID', 'month_%', 'trimestre_%', 'semestre_%']
+        elif quarter_info:
+            user_presence_percentage.append(
+                [u, month_presence, sum(trimestre_presence)/len(trimestre_presence)])
+            cols = ['UserID', 'month_%', 'trimestre_%']
+        elif semester_info:
+            user_presence_percentage.append(
+                [u, month_presence, sum(semestre_presence)/len(semestre_presence)] )
+            cols = ['UserID', 'month_%', 'semestre_%']
+        else:
+            user_presence_percentage.append(
+                [u, month_presence])
+            cols = ['UserID', 'month_%']
 
     # building DF from presence percentage
     user_presence_df = pd.DataFrame(
         user_presence_percentage,
-        columns=['UserID', 'month_%', 'trimestre_%', 'semestre_%']
+        columns=cols
         ).sort_values(by='month_%', ascending=False)
     user_presence_df.reset_index(drop=True, inplace=True)
     # building DF with counts of quarter and semester interactions
-    user_trimestre_interactions = pd.DataFrame( user_trimestre_interactions ).T
-    user_semestre_interactions = pd.DataFrame( user_semestre_interactions ).T
-
-    return user_presence_df, user_month_interactions, trimestres, user_trimestre_interactions, semestres, user_semestre_interactions
+    if quarter_info and semester_info:
+        user_trimestre_interactions = pd.DataFrame( user_trimestre_interactions ).T
+        user_semestre_interactions = pd.DataFrame( user_semestre_interactions ).T
+        return user_presence_df, user_month_interactions, trimestres, user_trimestre_interactions, semestres, user_semestre_interactions
+    elif quarter_info:
+        user_trimestre_interactions = pd.DataFrame( user_trimestre_interactions ).T
+        return user_presence_df, user_month_interactions, trimestres, user_trimestre_interactions
+    elif semester_info:
+        user_semestre_interactions = pd.DataFrame( user_semestre_interactions ).T
+        return user_presence_df, user_month_interactions, semestres, user_semestre_interactions
+    else:
+        return user_presence_df, user_month_interactions
 
 def plot_interactions_per_month(data, dataset_name):
     '''
@@ -111,8 +145,10 @@ def plot_user_presence_distribution(user_presence_df, dataset_name):
     '''
     fig, ax = plt.subplots(1,3, figsize=(17,4))
     user_presence_df['month_%'].plot(kind='hist', ax=ax[0], title='user month presence')
-    user_presence_df['trimestre_%'].plot(kind='hist', ax=ax[1], title='user quarter presence')
-    user_presence_df['semestre_%'].plot(kind='hist', ax=ax[2], title='user semester presence')
+    if 'trimestre_%' in user_presence_df.columns:
+        user_presence_df['trimestre_%'].plot(kind='hist', ax=ax[1], title='user quarter presence')    
+    if 'semestre_%' in user_presence_df.columns:
+        user_presence_df['semestre_%'].plot(kind='hist', ax=ax[2], title='user semester presence')    
     plt.suptitle(f'{dataset_name}: User presence distribution')
     plt.savefig(f'images/user_bucket_analysis/{dataset_name}_user_presence_distribution.png');
 
@@ -151,25 +187,34 @@ of {user_presence_df['UserID'].nunique()} \
 ({round( 100*len(frequent_users_month) / user_presence_df.shape[0], 3)}%) occurr in {frequency_threshold*100}% or more months.''' #  (of {user_month_interactions["date"].nunique()})
     )
 
-    # getting frequent users per quarter
-    frequent_users_trimestre = user_presence_df[user_presence_df['trimestre_%']>=frequency_threshold ]['UserID'].values
-    # percentage of users that are *frequent in quarters
-    print(
+    if 'trimestre_%' in user_presence_df.columns:
+        # getting frequent users per quarter
+        frequent_users_trimestre = user_presence_df[user_presence_df['trimestre_%']>=frequency_threshold ]['UserID'].values
+        # percentage of users that are *frequent in quarters
+        print(
 f'''{len(frequent_users_trimestre)} users \
 of {user_presence_df['UserID'].nunique()} \
 ({round( 100*len( frequent_users_trimestre ) / user_presence_df.shape[0], 3)}%) occurr in {frequency_threshold*100}% or more quarters.''' #  (of {len( trimestres) +1})
-    )
+        )
 
-    # getting frequent users per semester
-    frequent_users_semestre = user_presence_df[user_presence_df['semestre_%']>=frequency_threshold ]['UserID'].values
-    # percentage of users that are *frequent in semesters
-    print(
+    if 'semestre_%' in user_presence_df.columns:
+        # getting frequent users per semester
+        frequent_users_semestre = user_presence_df[user_presence_df['semestre_%']>=frequency_threshold ]['UserID'].values
+        # percentage of users that are *frequent in semesters
+        print(
 f'''{len(frequent_users_semestre)} users \
 of {user_presence_df['UserID'].nunique()} \
 ({round( 100*len( frequent_users_semestre ) / user_presence_df.shape[0], 3)}%) occurr in {frequency_threshold*100}% or more semesters.''' #  (of {len( semestres) +1})
-    )
-
-    return frequent_users_month, frequent_users_trimestre, frequent_users_semestre
+        )
+    
+    if 'trimestre_%' in user_presence_df.columns and 'semestre_%' in user_presence_df.columns:
+        return frequent_users_month, frequent_users_trimestre, frequent_users_semestre
+    elif 'trimestre_%' in user_presence_df.columns:
+        return frequent_users_month, frequent_users_trimestre
+    elif 'semestre_%' in user_presence_df.columns:
+        return frequent_users_month, frequent_users_semestre
+    else:
+        return frequent_users_month
 
 def get_frequent_user_statistics(interactions_df, frequent_users_list):
     '''

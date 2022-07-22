@@ -15,6 +15,7 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
     intervals - list containing tuple intervals. pos0-interval start, pos1-interval end. for QS these are dates, for F these are indexes. not necessary for Month interval type.\n
     cold_start_buckets - number of buckets to be used for training only\n
     '''
+    print('Creating buckets. . .')
     buckets = []
     assert interval_type in ['M', 'QS', 'F'], "interval must be one of M, QS, or F"
     if interval_type == 'M':
@@ -35,7 +36,8 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
         # create buckets based on fixed number of examples
         for i, j in intervals:
             buckets.append( data.iloc[i:j] )
-
+    
+    print('Creating holdouts. . .')
     # create holdouts with last user interaction
     holdouts = []
     frequent_users_seen = [] # frequent users must have been seen at least once before being sent to holdouts. 
@@ -63,7 +65,8 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
                 if (idx.sum() > 0):
                     frequent_users_seen.append(u)
         bucket.reset_index(drop=True, inplace=True) # reset index required - implicitdata indexes user by their previous index
-
+    
+    print('Cleaning holdouts. . .')
     # a verification is required to remove any items in the holdouts from the buckets
     # i.e. items that are in holdouts can never be used for training
     # can this be done while the holdouts and buckets are created?  
@@ -101,13 +104,15 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
                         continue
                 buckets[j+1] = bucket.reset_index().sort_values(by='timestamp')
                 holdouts[j] = holdout.drop(index=ci_temp).reset_index()
-            
+                
+    print('Converting to ImplicitData. . .')
     for i, b in enumerate(buckets):
         buckets[i] = ImplicitData(user_list=b[user_col], item_list=b[item_col]) # convert to ImplicitData
 
     for j, h in enumerate(holdouts):
         holdouts[j] = ImplicitData(user_list=h[user_col], item_list=h[item_col]) # convert to ImplicitData
-
+    
+    print('Done!')
     return buckets, holdouts
 
         # holdouts[i-cold_start_buckets] = ImplicitData(user_list=holdout[user_col], item_list=holdout[item_col]) # convert holdout to ImplicitData
