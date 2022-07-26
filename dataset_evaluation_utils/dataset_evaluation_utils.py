@@ -52,7 +52,7 @@ def get_interactions_info(data, user_col, quarter_info=False, semester_info=Fals
     # user_presence_map = dict()
     c = 0
     for u in user_month_interactions[user_col].unique():
-        progress = round( 100*( c/user_month_interactions[user_col].nunique() ), 2 )
+        progress = round( 100*( c/user_month_interactions[user_col].nunique() ), 4 )
         if progress%5==0:
             print( progress, '%' )
         c+=1
