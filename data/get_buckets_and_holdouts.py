@@ -15,6 +15,7 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
     intervals - list containing tuple intervals. pos0-interval start, pos1-interval end. for QS these are dates, for F these are indexes. not necessary for Month interval type.\n
     cold_start_buckets - number of buckets to be used for training only\n
     '''
+#     print('0',data.shape[0]) # debug
     print('Creating buckets. . .')
     buckets = []
     assert interval_type in ['M', 'QS', 'F'], "interval must be one of M, QS, or F"
@@ -37,6 +38,10 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
         for i, j in intervals:
             buckets.append( data.iloc[i:j] )
     
+#     # debug
+#     a = pd.concat( buckets ).set_index([user_col, item_col])
+#     print('1',a.shape[0])
+    
     print('Creating holdouts. . .')
     # create holdouts with last user interaction
     holdouts = []
@@ -57,14 +62,17 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
             holdout = b.loc[ last_interaction_idx ] # get last interactions as holdout
             holdout.reset_index(drop=True, inplace=True) # reset index required - implicitdata indexes user by their previous index
             holdouts.append(holdout) # append to holdouts
-            bucket = b.drop( index = last_interaction_idx) # remove last interactions from bucket
+            buckets[i] = b.drop( index = last_interaction_idx).reset_index(drop=True) # remove last interactions from bucket
+#             # debug
+#             a = pd.concat( buckets ).set_index([user_col, item_col])
+#             b = pd.concat( holdouts )[[user_col, item_col]].set_index([user_col, item_col])
+#             print('2', a.reset_index().shape[0] + b.reset_index().shape[0] )
         else: # if bucket belongs to 'cold_start_buckets'
-            bucket = b
+            buckets[i] = b.reset_index(drop=True)
             for u in frequent_users: # as before, we mark frequent users in the cold start bucket as seen
                 idx = b[user_col] == u
                 if (idx.sum() > 0):
                     frequent_users_seen.append(u)
-        bucket.reset_index(drop=True, inplace=True) # reset index required - implicitdata indexes user by their previous index
     
     print('Cleaning holdouts. . .')
     # a verification is required to remove any items in the holdouts from the buckets
@@ -90,6 +98,10 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
             holdout = holdouts[i-cold_start_buckets].append(temp_b.loc[ common_interactions ].reset_index()).sort_values(by='timestamp').reset_index(drop=True)
             holdouts[i-cold_start_buckets] = holdout
             buckets[i] = temp_b.drop(index=common_interactions).reset_index()
+#             # debug
+#             a = pd.concat( buckets ).set_index([user_col, item_col])
+#             b = pd.concat( holdouts )[[user_col, item_col]].set_index([user_col, item_col])
+#             print('3', a.reset_index().shape[0] + b.reset_index().shape[0] )
         # if bucket[i] is a cold start bucket, the interactions are removed from the holdouts instead
         else:
             for j, _ in enumerate(holdouts):
@@ -104,6 +116,10 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
                         continue
                 buckets[j+1] = bucket.reset_index().sort_values(by='timestamp')
                 holdouts[j] = holdout.drop(index=ci_temp).reset_index()
+#             # debug
+#             a = pd.concat( buckets ).set_index([user_col, item_col])
+#             b = pd.concat( holdouts )[[user_col, item_col]].set_index([user_col, item_col])
+#             print('4', a.reset_index().shape[0] + b.reset_index().shape[0] )
                 
     print('Converting to ImplicitData. . .')
     for i, b in enumerate(buckets):

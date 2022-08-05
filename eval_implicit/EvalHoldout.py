@@ -27,50 +27,62 @@ class EvalHoldout:
         self.default_user = default_user
 
 
-    def EvaluateTime(self):
-        results = dict()
-        time_get_tuple = []
-        time_recommend = []
-        time_eval_point = []
+#     def EvaluateTime(self):
+#         results = dict()
+#         time_get_tuple = []
+#         time_recommend = []
+#         time_eval_point = []
+
+#         for metric in self.metrics:
+#             results[metric] = []
+
+#         for i in range(self.holdout.size):
+#             start_get_tuple = time.time()
+#             uid, iid = self.holdout.GetTuple(i)
+#             end_get_tuple = time.time()
+#             time_get_tuple.append(end_get_tuple - start_get_tuple)
+
+#             if iid not in self.model.data.GetUserItems(uid, False):
+#                 start_recommend = time.time()
+#                 reclist = self.model.Recommend(user = uid, n = self.N_recommendations, default_user=self.default_user) # Experimentar com outro default_user???
+#                 end_recommend = time.time()
+#                 time_recommend.append(end_recommend - start_recommend)
+
+#                 start_eval_point = time.time()
+#                 results[metric].append(self.__EvalPoint(iid, reclist))
+#                 end_eval_point = time.time()
+#                 time_eval_point.append(end_eval_point - start_eval_point)
+
+
+#         results['time_get_tuple'] = time_get_tuple
+#         results['time_recommend'] = time_recommend
+#         results['time_eval_point'] = time_eval_point
+
+#         return results
+
+    def Evaluate(self, exclude_known_items: bool = True ):
+        results = {'time_get_tuple':[], 'time_recommend': [], 'time_eval_point': []}
 
         for metric in self.metrics:
             results[metric] = []
 
         for i in range(self.holdout.size):
+            # GetTuple
             start_get_tuple = time.time()
-            uid, iid = self.holdout.GetTuple(i)
+            uid, iid = self.holdout.GetTuple(i) # get external IDs
             end_get_tuple = time.time()
-            time_get_tuple.append(end_get_tuple - start_get_tuple)
-
-            if iid not in self.model.data.GetUserItems(uid, False):
-                start_recommend = time.time()
-                reclist = self.model.Recommend(user = uid, n = self.N_recommendations, default_user=self.default_user) # Experimentar com outro default_user???
-                end_recommend = time.time()
-                time_recommend.append(end_recommend - start_recommend)
-
+            results['time_get_tuple'].append(end_get_tuple - start_get_tuple)
+            # Recommend
+            start_recommend = time.time()
+            reclist = self.model.Recommend(user = uid, n = self.N_recommendations, exclude_known_items = exclude_known_items, default_user=self.default_user)
+            end_recommend = time.time()
+            results['time_recommend'].append(end_recommend - start_recommend)
+            # EvalPoint
+            if len(reclist): # if user has been seen by model, add result
                 start_eval_point = time.time()
                 results[metric].append(self.__EvalPoint(iid, reclist))
                 end_eval_point = time.time()
-                time_eval_point.append(end_eval_point - start_eval_point)
-
-
-        results['time_get_tuple'] = time_get_tuple
-        results['time_recommend'] = time_recommend
-        results['time_eval_point'] = time_eval_point
-
-        return results
-
-    def Evaluate(self, exclude_known_items: bool = True ):
-        results = dict()
-
-        for metric in self.metrics:
-            results[metric] = []
-
-        for i in range(self.holdout.size):
-            uid, iid = self.holdout.GetTuple(i) # get external IDs
-            reclist = self.model.Recommend(user = uid, n = self.N_recommendations, exclude_known_items = exclude_known_items, default_user=self.default_user)
-            if len(reclist): # if user has been seen by model, add result
-                results[metric].append(self.__EvalPoint(iid, reclist))
+                results['time_eval_point'].append(end_eval_point - start_eval_point)
             else:
                 print(uid, 'user not seen')
         return results
