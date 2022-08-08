@@ -2,6 +2,7 @@ import random
 from data import ImplicitData
 from .ISGD import ISGD
 import numpy as np
+import time
 
 class RAISGD(ISGD):
     """
