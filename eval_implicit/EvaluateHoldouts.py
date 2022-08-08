@@ -36,7 +36,7 @@ class EvaluateHoldouts():
                 s = time.time()
                 self.model.IncrTrain(uid, iid) # perform incremental training
                 f = time.time()
-                incrtrain_time.append(f-s)               
+                incrtrain_time.append(f-s)    
             if b >= cold_start_buckets:
                 s = time.time()
                 self._MakeCheckpoint() # store model
@@ -72,7 +72,8 @@ class EvaluateHoldouts():
                 del results[metric]
                 eh_instance_time.append(results)
                 n_not_seen = hd.size - len(result) # if user was not seen, its not added to recall. May be needed to store difference.
-                print(f'recommendations not made for users in holdout {i} x bucket {j}: {n_not_seen}')
+                if n_not_seen:
+                    print(f'recommendations not made for users in holdout {i} x bucket {j}: {n_not_seen}')
                 result = sum( result ) / len(result)                
                 self.results_matrix[i, j] = result
             self.EvaluateHoldouts_time_record[f'holdout_{i}'] = {
