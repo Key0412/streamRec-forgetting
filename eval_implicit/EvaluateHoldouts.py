@@ -60,9 +60,11 @@ class EvaluateHoldouts():
         self.results_matrix = np.zeros( shape=( len( self.holdouts ), len( self.holdouts ) ) )
         metric = self.metrics[0]
         for i, hd in enumerate( self.holdouts ):
+            print(f'Holdout {i}')
             evaluate_time = []
             eh_instance_time = []
             for j, model in enumerate( self.model_checkpoints ):
+                print(f'Model {j}')
                 eh_instance = EvalHoldout(model=model, holdout=hd, metrics=[metric], N_recommendations=N_recommendations, default_user=default_user)
                 s = time.time()
                 results = eh_instance.Evaluate(exclude_known_items=exclude_known_items)

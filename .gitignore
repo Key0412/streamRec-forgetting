@@ -3,6 +3,7 @@ results/
 test*.py
 temp/
 notebooks/output/amazonbooks_dump/
+notebooks/output/amazonkindle_dump/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -83,8 +83,8 @@ class EvalHoldout:
                 results[metric].append(self.__EvalPoint(iid, reclist))
                 end_eval_point = time.time()
                 results['time_eval_point'].append(end_eval_point - start_eval_point)
-            else:
-                print(uid, 'user not seen')
+#             else:
+#                 print(uid, 'user not seen')
         return results
 
     def __EvalPoint(self, item_id, reclist):
