@@ -156,7 +156,7 @@ class UserKNN(Model):
         return 0
 
 
-    def Recommend(self, user_eid, n: int = -1, exclude_known_items: bool = True, sort_list: bool = True):
+    def Recommend(self, user, n: int = -1, exclude_known_items: bool = True, default_user: str = 'none', sort_list: bool = True):
         """
         Returns an list of tuples in the form (item_id, score), ordered by score.
 
@@ -164,19 +164,21 @@ class UserKNN(Model):
         user -- The external ID of the user
         """
 
-        user_id = self.data.GetUserInternalId(user_eid)
+        user_id = self.data.GetUserInternalId(user)
 
         if user_id == -1:
             return []
 
-        recs = [[i, self.Predict(user_eid, i, False)] for i in self.data.itemset]
-
-        if exclude_known_items:
+        recs = [[i, self.Predict(user, i, False)] for i in self.data.itemset]
+                
+        if exclude_known_items and user_id != -1:
             user_items = self.data.GetUserItems(user_id)
             recs = np.delete(recs, user_items, 0)
 
         if sort_list:
-            recs = recs[np.argsort(-recs[:, 1], kind = 'heapsort')]
+            float_scores = recs[:, 1].astype(float) # needed if data.itemset contains strings, and not int or float
+#             recs = recs[np.argsort(-recs[:, 1], kind = 'heapsort')]
+            recs = recs[np.argsort(-float_scores, kind = 'heapsort')]
 
         if n == -1 or n > len(recs) :
             n = len(recs)

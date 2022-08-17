@@ -10,7 +10,7 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
     data - interactions, must contain 'date' column\n
     user_col - name of column with user IDs\n
     item_col - name of column with item IDs\n
-    frequent_users - list of frequent users\n
+    frequent_users - list of frequent users. Only their interactions go to holdout.\n
     interval_type - M for month, QS for quarter or semester, F representing fixed bucket size\n
     intervals - list containing tuple intervals. pos0-interval start, pos1-interval end. for QS these are dates, for F these are indexes. not necessary for Month interval type.\n
     cold_start_buckets - number of buckets to be used for training only\n
