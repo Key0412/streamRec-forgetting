@@ -11,15 +11,21 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
     user_col - name of column with user IDs\n
     item_col - name of column with item IDs\n
     frequent_users - list of frequent users. Only their interactions go to holdout.\n
-    interval_type - M for month, QS for quarter or semester, F representing fixed bucket size\n
+    interval_type - W for week, M for month, QS for quarter or semester, F representing fixed bucket size\n
     intervals - list containing tuple intervals. pos0-interval start, pos1-interval end. for QS these are dates, for F these are indexes. not necessary for Month interval type.\n
     cold_start_buckets - number of buckets to be used for training only\n
     '''
 #     print('0',data.shape[0]) # debug
     print('Creating buckets. . .')
     buckets = []
-    assert interval_type in ['M', 'QS', 'F'], "interval must be one of M, QS, or F"
-    if interval_type == 'M':
+    assert interval_type in ['W', 'M', 'QS', 'F'], "interval must be one of W, M, QS, or F"
+    if interval_type == 'W':
+        # create buckets based on months
+        weeks = data['week'].unique()
+        for interval in weeks:
+            idx = (data['week'] == interval)
+            buckets.append( data[idx] )
+    elif interval_type == 'M':
         # create buckets based on months
         months = data['date'].unique()
         for interval in months:
@@ -79,47 +85,57 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
     # i.e. items that are in holdouts can never be used for training
     # can this be done while the holdouts and buckets are created?  
 
-    # for each bucket:
+    # for each holdout:
     #   set interaction tuple as index 
-    #   perform a inner join with the holdouts dataframe.
+    #   perform a inner join with the buckets dataframe.
     #   get the unique interactions that occur in both (i.e. resulting unique indexes)
-    #   append these interactions to the respective holdout
-    #   remove these interactions from the bucket
+    #   append these interactions to the respective bucket
+    #   remove these interactions from the holdout
 
-    for i, _ in enumerate(buckets): 
-        holdouts_df = pd.concat( holdouts )[[user_col, item_col]].set_index([user_col, item_col]) # concatenate all holdouts and set interaction tuple as index.
-        temp_b = buckets[i].set_index([user_col, item_col])
-        common_interactions = temp_b.join(holdouts_df, how='inner').index
+    for i, _ in enumerate(holdouts): 
+        buckets_df = pd.concat( buckets )[[user_col, item_col]].set_index([user_col, item_col]) # concatenate all holdouts and set interaction tuple as index.
+        temp_h = holdouts[i].set_index([user_col, item_col])
+        common_interactions = temp_h.join(buckets_df, how='inner').index
         common_interactions = np.unique( common_interactions )
-        print(f'common interactions between bucket {i+1} and all holdouts.')
-        print( len(common_interactions) )
-        # if bucket[i] is not a cold start bucket, the interactions are removed from the bucket to the holdout
-        if i >= cold_start_buckets:
-            holdout = holdouts[i-cold_start_buckets].append(temp_b.loc[ common_interactions ].reset_index()).sort_values(by='timestamp').reset_index(drop=True)
-            holdouts[i-cold_start_buckets] = holdout
-            buckets[i] = temp_b.drop(index=common_interactions).reset_index()
-#             # debug
-#             a = pd.concat( buckets ).set_index([user_col, item_col])
-#             b = pd.concat( holdouts )[[user_col, item_col]].set_index([user_col, item_col])
-#             print('3', a.reset_index().shape[0] + b.reset_index().shape[0] )
-        # if bucket[i] is a cold start bucket, the interactions are removed from the holdouts instead
-        else:
-            for j, _ in enumerate(holdouts):
-                bucket = buckets[j+1].set_index([user_col, item_col])
-                holdout = holdouts[j].set_index([user_col, item_col])
-                ci_temp = []
-                for ci in common_interactions:
-                    try:
-                        bucket = bucket.append(holdout.loc[ ci ])
-                        ci_temp.append(ci)
-                    except:
-                        continue
-                buckets[j+1] = bucket.reset_index().sort_values(by='timestamp')
-                holdouts[j] = holdout.drop(index=ci_temp).reset_index()
-#             # debug
-#             a = pd.concat( buckets ).set_index([user_col, item_col])
-#             b = pd.concat( holdouts )[[user_col, item_col]].set_index([user_col, item_col])
-#             print('4', a.reset_index().shape[0] + b.reset_index().shape[0] )
+        print(f'common interactions between holdout {i+1} and all buckets: {len(common_interactions)}')
+        bucket = buckets[i+cold_start_buckets].append(temp_h.loc[ common_interactions ].reset_index()).sort_values(by='timestamp').reset_index(drop=True)
+        buckets[i+cold_start_buckets] = bucket
+        holdouts[i] = temp_h.drop(index=common_interactions).reset_index()
+                
+#     for i, _ in enumerate(buckets): 
+#         holdouts_df = pd.concat( holdouts )[[user_col, item_col]].set_index([user_col, item_col]) # concatenate all holdouts and set interaction tuple as index.
+#         temp_b = buckets[i].set_index([user_col, item_col])
+#         common_interactions = temp_b.join(holdouts_df, how='inner').index
+#         common_interactions = np.unique( common_interactions )
+#         print(f'common interactions between bucket {i+1} and all holdouts.')
+#         print( len(common_interactions) )
+#         # if bucket[i] is not a cold start bucket, the interactions are removed from the bucket to the holdout
+#         if i >= cold_start_buckets:
+#             holdout = holdouts[i-cold_start_buckets].append(temp_b.loc[ common_interactions ].reset_index()).sort_values(by='timestamp').reset_index(drop=True)
+#             holdouts[i-cold_start_buckets] = holdout
+#             buckets[i] = temp_b.drop(index=common_interactions).reset_index()
+# #             # debug
+# #             a = pd.concat( buckets ).set_index([user_col, item_col])
+# #             b = pd.concat( holdouts )[[user_col, item_col]].set_index([user_col, item_col])
+# #             print('3', a.reset_index().shape[0] + b.reset_index().shape[0] )
+#         # if bucket[i] is a cold start bucket, the interactions are removed from the holdouts instead
+#         else:
+#             for j, _ in enumerate(holdouts):
+#                 bucket = buckets[j+1].set_index([user_col, item_col])
+#                 holdout = holdouts[j].set_index([user_col, item_col])
+#                 ci_temp = []
+#                 for ci in common_interactions:
+#                     try:
+#                         bucket = bucket.append(holdout.loc[ ci ])
+#                         ci_temp.append(ci)
+#                     except:
+#                         continue
+#                 buckets[j+1] = bucket.reset_index().sort_values(by='timestamp')
+#                 holdouts[j] = holdout.drop(index=ci_temp).reset_index()
+# #             # debug
+# #             a = pd.concat( buckets ).set_index([user_col, item_col])
+# #             b = pd.concat( holdouts )[[user_col, item_col]].set_index([user_col, item_col])
+# #             print('4', a.reset_index().shape[0] + b.reset_index().shape[0] )
                 
     print('Converting to ImplicitData. . .')
     for i, b in enumerate(buckets):

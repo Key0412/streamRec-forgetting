@@ -23,12 +23,13 @@ def lineplot_recallxholdout(df,
         plt.savefig(filepath);
 
 def recall_heatmap(df,
+    round_point=2,
     title='Recall@20 for checkpoint models across Holdouts - model - data',
     filepath='images/heatmaps/..'):
     plt.figure(figsize=(15, 10))
     x_t = np.arange(0, df.shape[0])
     labels=[str(i+1) for i in x_t]
-    sns.heatmap(df, vmin=0, vmax=df.max().max(), annot=True, fmt='0.2f', linewidths=.1, cmap='Spectral_r', xticklabels=labels, yticklabels=labels)
+    sns.heatmap(df, vmin=0, vmax=df.max().max(), annot=True, fmt=f'0.{round_point}f', linewidths=.1, cmap='Spectral_r', xticklabels=labels, yticklabels=labels)
     plt.ylabel('model')
     plt.xlabel('holdout')
     plt.title(title)
