@@ -22,15 +22,17 @@ class EvaluateHoldouts():
         self.EvaluateHoldouts_time_record = {}
 #         self._IncrementalTraining()
 
-    def Train_Evaluate(self, N_recommendations=20, exclude_known_items:bool=True, default_user:str='none'):
+    def Train_Evaluate(self, N_recommendations=20, exclude_known_items:bool=True, default_user:str='none', verbose=True):
         '''
         Incremental training of recommendation model.
         '''
         cold_start_buckets = len( self.buckets ) - len( self.holdouts )
         self.results_matrix = np.zeros( shape=( len( self.holdouts ), len( self.holdouts ) ) )
+        self.verbose=verbose
         for b, bucket in enumerate(self.buckets):
-            print(100*'-')
-            print(f'Train bucket {b}')
+            if self.verbose:
+                print(100*'-')
+                print(f'Train bucket {b}')
             incrtrain_time = []            
             for i in range(bucket.size):
                 uid, iid = bucket.GetTuple(i) # get external IDs
@@ -58,7 +60,8 @@ class EvaluateHoldouts():
         '''        
         metric = self.metrics[0]
         for j, hd in enumerate( self.holdouts ):
-            print(f'Test Holdout {j}')
+            if self.verbose:
+                print(f'Test Holdout {j}')
             evaluate_time = []
             eh_instance_time = []
             
@@ -73,7 +76,7 @@ class EvaluateHoldouts():
             del results[metric]
             eh_instance_time.append(results)            
             n_not_seen = hd.size - len(result) # if user was not seen, its not added to recall. May be needed to store difference.
-            if n_not_seen:
+            if n_not_seen and self.verbose:
                 print(f'recommendations not made for users in holdout {j} x checkpoint {bucket_number}: {n_not_seen}')
                 
             result = sum( result ) / len(result)                
