@@ -170,7 +170,8 @@ class UserKNN(Model):
             return []
 
         recs = [[i, self.Predict(user, i, False)] for i in self.data.itemset]
-                
+        recs = np.array(recs)
+
         if exclude_known_items and user_id != -1:
             user_items = self.data.GetUserItems(user_id)
             recs = np.delete(recs, user_items, 0)
