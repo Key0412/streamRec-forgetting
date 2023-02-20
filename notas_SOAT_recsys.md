@@ -8,6 +8,13 @@ Os métodos que buscamos **não** devem levar em consideração informação adi
 
 ---
 
+Métodos de redes neuronais utilizados em ambos os ultimos artigos sobre problemas de reprodução e progresso em RecSys:
+- MultiVAE
+- NeuMF
+Destes, o multivae é mais escalavel e tem melhor desempenho em ambos os estudos!
+
+---
+
 Os métodos que eram estado da arte anteriormente (e são razoavelmente reproduzíveis) são:
 
 * Do paper *A Troubling Analysis of Reproducibility and Progress in Recommender Systems Research* (https://github.com/MaurizioFD/RecSys2019_DeepLearning_Evaluation):
@@ -28,9 +35,9 @@ Os métodos que eram estado da arte anteriormente (e são razoavelmente reproduz
         
 * Nvidia implementation (https://nvidia-merlin.github.io/models/main/models_overview.html#matrix-factorization):
     * 2019:
-        * Deep Learning Recommendation Model for Personalization and Recommendation Systems (2019)
+        * Deep Learning Recommendation Model for Personalization and Recommendation Systems (2019): Naumov, Maxim, Dheevatsa Mudigere, Hao-Jun Michael Shi, Jianyu Huang, Narayanan Sundaraman, Jongsoo Park, Xiaodong Wang, et al. “Deep Learning Recommendation Model for Personalization and Recommendation Systems.” ArXiv:1906.00091 [Cs], May 31, 2019. 
     * 2020:
-        * DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-Scale Learning to Rank Systems. (2020)
+        * DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-Scale Learning to Rank Systems. (2020). Wang, Ruoxi, Rakesh Shivanna, Derek Z. Cheng, Sagar Jain, Dong Lin, Lichan Hong, and Ed H. Chi. “DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-Scale Learning to Rank Systems.” ArXiv:2008.13535 [Cs, Stat], October 20, 2020.
 
 * Disponíveis no DeepRec (https://github.com/cheungdaven/DeepRec/tree/master/models/item_ranking):
     * 2009:
