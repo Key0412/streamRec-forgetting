@@ -1,5 +1,7 @@
 # https://elliot.readthedocs.io/en/latest/guide/config.html
 experiment:
+  config_test: True
+  gpu: 1 # https://towardsdatascience.com/how-to-finally-install-tensorflow-gpu-on-wsl2-7be59e278f92
   version: 1.0
   dataset: sampled_movielens
   data_config:
@@ -25,7 +27,7 @@ experiment:
   evaluation:
     # cutoffs: [10, 5] # top_k value is assumed as a cut-off
     # relevance_threshold: 1 
-    simple_metrics: [ nDCG, Precision, Recall]
-    paired_ttest: True
-    wilcoxon_test: True
+    simple_metrics: [nDCG, Precision, Recall]
+    # paired_ttest: True
+    # wilcoxon_test: True
 
