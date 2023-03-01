@@ -1,3 +1,5 @@
+libcudnn*
+cuda*
 datasets/
 results/
 test*.py
