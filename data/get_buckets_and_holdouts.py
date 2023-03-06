@@ -28,6 +28,7 @@ def getBucketsHoldouts(data:pd.DataFrame, user_col:str, item_col:str, frequent_u
     elif interval_type == 'M':
         # create buckets based on months
         months = data['date'].unique()
+        months.sort()
         for interval in months:
             idx = (data['date'] == interval)
             buckets.append( data[idx] )

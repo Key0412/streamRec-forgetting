@@ -4,7 +4,7 @@ datasets/
 results/
 test*.py
 temp/
-notebooks/elliot example/*.csv
+*.csv
 notebooks/output/amazonbooks_dump/
 notebooks/output/amazonkindle_dump/
 
