@@ -47,16 +47,15 @@ experiment:
         # validation_rate: 
         hyper_opt_alg: tpe
         hyper_max_evals: 10
-      epochs: [randint, 1, 20]
-      batch_size: [randint, 100, 1000]
-      intermediate_dim: [randint, 100, 1000]
-      latent_dim: [randint, 100, 500]
-      mf_factors: [randint, 1, 50]
+      epochs: [randint, 1, 50]
+      batch_size: [randint, 10, 100]
+      intermediate_dim: [randint, 25, 300]
+      latent_dim: [randint, 25, 150]
       reg_lambda: [loguniform, -7, 0]
       lr: [loguniform, -7, 0]
       dropout_pkeep: [uniform, 0, 1]
       early_stopping: # https://elliot.readthedocs.io/en/latest/guide/early_stopping.html
-        patience: 10 # int
+        patience: 5 # int
         monitor: Recall@20
         mode: auto
         verbose: False
