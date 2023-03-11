@@ -47,8 +47,8 @@ experiment:
         # validation_rate: 
         hyper_opt_alg: tpe
         hyper_max_evals: 10
-      epochs: [randint, 1, 50]
-      batch_size: [randint, 10, 100]
+      epochs: [randint, 1, 20]
+      batch_size: [randint, 10, 50]
       intermediate_dim: [randint, 25, 300]
       latent_dim: [randint, 25, 150]
       reg_lambda: [loguniform, -7, 0]
