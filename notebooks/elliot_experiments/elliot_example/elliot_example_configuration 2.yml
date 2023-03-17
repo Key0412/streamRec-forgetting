@@ -12,17 +12,8 @@ experiment:
   dataset: sampled_movielens
   data_config:
     strategy: fixed # assumes that our data has been previously split into training/validation/test sets or training/test sets.
-    train_path: movielens_bucket_1.csv
-    # validation_path: this/is/the/path.tsv # optional
+    train_path: movielens_bucket_0.csv
     test_path: movielens_holdout_1.csv
-  # binarize: True
-  # align_side_with_train: False
-  # prefiltering:
-  # splitting:
-
-  # Output config:
-  # If not provided, Elliot creates a results folder in the parent folder of the config file location.
-  # Elliot creates a log/ folder in the parent folder of the config file location.
   path_output_rec_result: results/recs # lets the user define the path to the folder to store the recommendation lists.
   path_output_rec_weight: results/weights #  lets the user define the path to the folder to store the model weights.
   path_output_rec_performance: results/performance # lets the user define the path to the folder to store the evaluation results.
@@ -32,11 +23,7 @@ experiment:
   # All the evaluation results are available in the performance folder at the end of the experiment
   top_k: 20
   evaluation:
-    # cutoffs: [10, 5] # if not passed, top_k value is assumed as a cut-off
-    # relevance_threshold: 1 
     simple_metrics: [nDCG, Precision, Recall]
-    # paired_ttest: True
-    # wilcoxon_test: True
   models: # https://elliot.readthedocs.io/en/latest/guide/recommenders.html
     MultiVAE: 
       meta:
@@ -44,17 +31,18 @@ experiment:
         save_recs: False
         save_weights: True
         validation_metric: Recall@20
-        # validation_rate: 
+        validation_rate: 1
         hyper_opt_alg: tpe
         hyper_max_evals: 10
         restore: True
-      epochs: [randint, 1, 20]
-      batch_size: [randint, 100, 1000]
-      intermediate_dim: [randint, 100, 1000]
-      latent_dim: [randint, 100, 500]
-      mf_factors: [randint, 1, 50]
-      reg_lambda: [loguniform, -7, 0]
-      lr: [loguniform, -7, 0]
-      dropout_pkeep: [uniform, 0, 1]
+    # from best model in previous training
+      epochs: 10
+      batch_size: 17
+      intermediate_dim: 155
+      latent_dim: 101
+      reg_lambda: 0.021991645792416692
+      lr: 0.30987825830054144
+      dropout_pkeep: 0.25040322158625117
+
 
 

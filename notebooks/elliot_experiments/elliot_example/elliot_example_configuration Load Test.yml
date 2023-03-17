@@ -27,10 +27,10 @@ experiment:
   # Output config:
   # If not provided, Elliot creates a results folder in the parent folder of the config file location.
   # Elliot creates a log/ folder in the parent folder of the config file location.
-  path_output_rec_result: results/recs # lets the user define the path to the folder to store the recommendation lists.
-  path_output_rec_weight: results/weights #  lets the user define the path to the folder to store the model weights.
-  path_output_rec_performance: results/performance # lets the user define the path to the folder to store the evaluation results.
-  path_log_folder: results/logs # lets the user define the path to the folder to store the logs.
+  path_output_rec_result: results_cp2/recs # lets the user define the path to the folder to store the recommendation lists.
+  path_output_rec_weight: results_cp2/weights #  lets the user define the path to the folder to store the model weights.
+  path_output_rec_performance: results_cp2/performance # lets the user define the path to the folder to store the evaluation results.
+  path_log_folder: results_cp2/logs # lets the user define the path to the folder to store the logs.
 
   # Evaluation:
   # All the evaluation results are available in the performance folder at the end of the experiment

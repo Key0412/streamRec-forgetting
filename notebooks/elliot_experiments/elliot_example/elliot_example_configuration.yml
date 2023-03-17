@@ -44,7 +44,7 @@ experiment:
         save_recs: False
         save_weights: True
         validation_metric: Recall@20
-        # validation_rate: 
+        validation_rate: 1
         hyper_opt_alg: tpe
         hyper_max_evals: 10
       epochs: [randint, 1, 20]
@@ -55,7 +55,7 @@ experiment:
       lr: [loguniform, -7, 0]
       dropout_pkeep: [uniform, 0, 1]
       early_stopping: # https://elliot.readthedocs.io/en/latest/guide/early_stopping.html
-        patience: 5 # int
+        patience: 3 # int
         monitor: Recall@20
         mode: auto
         verbose: False
