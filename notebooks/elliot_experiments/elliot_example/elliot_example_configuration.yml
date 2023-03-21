@@ -33,7 +33,7 @@ experiment:
   top_k: 20
   evaluation:
     # cutoffs: [10, 5] # if not passed, top_k value is assumed as a cut-off
-    # relevance_threshold: 1 
+    relevance_threshold: 0
     simple_metrics: [nDCG, Precision, Recall]
     # paired_ttest: True
     # wilcoxon_test: True

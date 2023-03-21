@@ -23,6 +23,7 @@ experiment:
   # All the evaluation results are available in the performance folder at the end of the experiment
   top_k: 20
   evaluation:
+    relevance_threshold: 0
     simple_metrics: [nDCG, Precision, Recall]
   models: # https://elliot.readthedocs.io/en/latest/guide/recommenders.html
     MultiVAE: 
@@ -43,6 +44,11 @@ experiment:
       reg_lambda: 0.021991645792416692
       lr: 0.30987825830054144
       dropout_pkeep: 0.25040322158625117
-
-
-
+      early_stopping: # https://elliot.readthedocs.io/en/latest/guide/early_stopping.html
+        patience: 3 # int
+        monitor: Recall@20
+        mode: auto
+        verbose: False
+        min_delta: 0.001 # float absolute variation
+        rel_delta: 0.1 # float (ratio)
+        baseline: 0.1 # float absolute value
