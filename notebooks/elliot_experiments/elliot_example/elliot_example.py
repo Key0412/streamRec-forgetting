@@ -20,7 +20,6 @@ def getBestModelParams(path_to_results):
             break
 
     best_model_params = best_model_info[1]['configuration'] # type: ignore
-    # best_model_params['meta']['save_weights'] = False # type: ignore
     model = best_model_params['name'].split('_')[0]
     del best_model_params['name'], best_model_params['best_iteration']
     return model, best_model_params
@@ -68,14 +67,11 @@ def setNewConfig( path_to_config_file, model_tup=None, path_to_results=None):
     yaml_file['experiment']['data_config']['test_path'] = test_path[:test_path.find('_h')+2] + holdout_idx + test_path[test_path.find('_h')+3:]
     yaml_file['experiment']['models'][model].update(best_model_params)
     yaml_file['experiment']['models'][model]['meta'].update({'restore': True})       
-    yaml_file['experiment']['models'][model]['meta'].update({'save_weights': False})     
+    yaml_file['experiment']['models'][model]['meta'].update({'save_weights': False})   
+    # yaml_file['experiment']['models'][model]['meta'].update({'save_recs': True}) # TEMP
 
     with open(new_config_file, "w") as stream:
-        try:
-            yaml.safe_dump(yaml_file, stream)
-        except yaml.YAMLError as exc:
-            print(exc)
-            sys.exit()
+        yaml.safe_dump(yaml_file, stream)
 
     return new_config_file, (model, best_model_params)
 
@@ -93,5 +89,4 @@ run_experiment(path_to_config_file)
 # Evaluation 3
 
 path_to_config_file, _ = setNewConfig( path_to_config_file, model_tup=model_tup )
-
 run_experiment(path_to_config_file)
