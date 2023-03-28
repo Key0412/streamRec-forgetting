@@ -7,6 +7,9 @@ temp/
 *.csv
 notebooks/output/amazonbooks_dump/
 notebooks/output/amazonkindle_dump/
+sampled_movielens_bucket0_holdout0
+results_b0_h0
+results_b0_h1
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

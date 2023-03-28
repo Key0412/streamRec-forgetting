@@ -12,9 +12,9 @@ experiment:
   dataset: sampled_movielens
   data_config:
     strategy: fixed # assumes that our data has been previously split into training/validation/test sets or training/test sets.
-    train_path: movielens_bucket_0.csv
+    train_path: movielens_b0.csv
     # validation_path: this/is/the/path.tsv # optional
-    test_path: movielens_holdout_0.csv
+    test_path: movielens_h0.csv
   # binarize: True
   # align_side_with_train: False
   # prefiltering:
@@ -23,17 +23,16 @@ experiment:
   # Output config:
   # If not provided, Elliot creates a results folder in the parent folder of the config file location.
   # Elliot creates a log/ folder in the parent folder of the config file location.
-  path_output_rec_result: results/recs # lets the user define the path to the folder to store the recommendation lists.
-  path_output_rec_weight: results/weights #  lets the user define the path to the folder to store the model weights.
-  path_output_rec_performance: results/performance # lets the user define the path to the folder to store the evaluation results.
-  path_log_folder: results/logs # lets the user define the path to the folder to store the logs.
+  path_output_rec_result: results_b0_h0/recs # lets the user define the path to the folder to store the recommendation lists.
+  path_output_rec_weight: results_b0_h0/weights #  lets the user define the path to the folder to store the model weights.
+  path_output_rec_performance: results_b0_h0/performance # lets the user define the path to the folder to store the evaluation results.
+  path_log_folder: results_b0_h0/logs # lets the user define the path to the folder to store the logs.
 
   # Evaluation:
   # All the evaluation results are available in the performance folder at the end of the experiment
   top_k: 20
   evaluation:
     # cutoffs: [10, 5] # if not passed, top_k value is assumed as a cut-off
-    relevance_threshold: 0
     simple_metrics: [nDCG, Precision, Recall]
     # paired_ttest: True
     # wilcoxon_test: True
@@ -54,14 +53,14 @@ experiment:
       reg_lambda: [loguniform, -7, 0]
       lr: [loguniform, -7, 0]
       dropout_pkeep: [uniform, 0, 1]
-      early_stopping: # https://elliot.readthedocs.io/en/latest/guide/early_stopping.html
-        patience: 3 # int
-        monitor: Recall@20
-        mode: auto
-        verbose: False
-        min_delta: 0.001 # float absolute variation
-        rel_delta: 0.1 # float (ratio)
-        baseline: 0.1 # float absolute value
+      # early_stopping: # https://elliot.readthedocs.io/en/latest/guide/early_stopping.html
+      #   patience: 3 # int
+      #   monitor: Recall@20
+      #   mode: auto
+      #   verbose: False
+      #   min_delta: 0.001 # float absolute variation
+      #   rel_delta: 0.1 # float (ratio)
+      #   baseline: 0.1 # float absolute value
 
 
 

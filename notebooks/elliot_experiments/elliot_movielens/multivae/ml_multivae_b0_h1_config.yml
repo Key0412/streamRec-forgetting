@@ -1,0 +1,34 @@
+experiment:
+  data_config:
+    strategy: fixed
+    test_path: ../movielens_holdout_1.csv
+    train_path: ../movielens_bucket_0.csv
+  dataset: sampled_movielens_bucket0_holdout0
+  evaluation:
+    simple_metrics: [nDCG,Precision,Recall]
+  gpu: 1
+  models:
+    MultiVAE:
+      batch_size: 814
+      best_iteration: 3
+      dropout_pkeep: 0.4141186324855384
+      epochs: 4
+      intermediate_dim: 334
+      latent_dim: 457
+      lr: 0.6250497652190135
+      meta:
+        hyper_max_evals: 50
+        hyper_opt_alg: tpe
+        restore: true
+        save_recs: false
+        save_weights: true
+        validation_metric: Recall@20
+        validation_rate: 1
+        verbose: false
+      mf_factors: 24
+      reg_lambda: 0.01609458678556684
+  path_log_folder: sampled_movielens_bucket0_holdout1/logs
+  path_output_rec_performance: sampled_movielens_bucket0_holdout1/performance
+  path_output_rec_result: sampled_movielens_bucket0_holdout1/recs
+  path_output_rec_weight: sampled_movielens_bucket0_holdout1/weights
+  top_k: 20
