@@ -3,7 +3,7 @@ experiment:
     strategy: fixed
     test_path: movielens_h2.csv
     train_path: movielens_b0.csv
-  dataset: sampled_movielens
+  dataset: sampled_movielens_b0_h2
   evaluation:
     simple_metrics:
     - nDCG
@@ -22,14 +22,14 @@ experiment:
         hyper_max_evals: 10
         hyper_opt_alg: tpe
         restore: true
-        save_recs: true
+        save_recs: false
         save_weights: false
         validation_metric: Recall@20
         validation_rate: 1
         verbose: false
       reg_lambda: 0.732234767486654
-  path_log_folder: results_b0_h0/logs
-  path_output_rec_performance: results_b0_h0/performance
-  path_output_rec_result: results_b0_h0/recs
-  path_output_rec_weight: results_b0_h0/weights
+  path_log_folder: /home/kpfra/streamRec-forgetting/MultiVae_Movielens_results_b0_h0/logs
+  path_output_rec_performance: /home/kpfra/streamRec-forgetting/MultiVae_Movielens_results_b0_h0/performance
+  path_output_rec_result: /home/kpfra/streamRec-forgetting/MultiVae_Movielens_results_b0_h0/recs
+  path_output_rec_weight: /home/kpfra/streamRec-forgetting/MultiVae_Movielens_results_b0_h0/weights
   top_k: 20

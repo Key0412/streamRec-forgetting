@@ -9,7 +9,7 @@ experiment:
   # https://www.tensorflow.org/install/source_windows
   # https://ubuntu.com/tutorials/enabling-gpu-acceleration-on-ubuntu-on-wsl2-with-the-nvidia-cuda-platform#1-overview
   # https://developer.nvidia.com/rdp/cudnn-archive
-  dataset: sampled_movielens
+  dataset: sampled_movielens_b0_h0
   data_config:
     strategy: fixed # assumes that our data has been previously split into training/validation/test sets or training/test sets.
     train_path: movielens_b0.csv
@@ -23,10 +23,10 @@ experiment:
   # Output config:
   # If not provided, Elliot creates a results folder in the parent folder of the config file location.
   # Elliot creates a log/ folder in the parent folder of the config file location.
-  path_output_rec_result: results_b0_h0/recs # lets the user define the path to the folder to store the recommendation lists.
-  path_output_rec_weight: results_b0_h0/weights #  lets the user define the path to the folder to store the model weights.
-  path_output_rec_performance: results_b0_h0/performance # lets the user define the path to the folder to store the evaluation results.
-  path_log_folder: results_b0_h0/logs # lets the user define the path to the folder to store the logs.
+  path_output_rec_result: /home/kpfra/streamRec-forgetting/MultiVae_Movielens_results_b0_h0/recs # lets the user define the path to the folder to store the recommendation lists.
+  path_output_rec_weight: /home/kpfra/streamRec-forgetting/MultiVae_Movielens_results_b0_h0/weights #  lets the user define the path to the folder to store the model weights.
+  path_output_rec_performance: /home/kpfra/streamRec-forgetting/MultiVae_Movielens_results_b0_h0/performance # lets the user define the path to the folder to store the evaluation results.
+  path_log_folder: /home/kpfra/streamRec-forgetting/MultiVae_Movielens_results_b0_h0/logs # lets the user define the path to the folder to store the logs.
 
   # Evaluation:
   # All the evaluation results are available in the performance folder at the end of the experiment
