@@ -19,7 +19,7 @@ def getBestModelParams(path_to_results):
     best_model_params = best_model_info[1]['configuration'] # type: ignore
     model = best_model_params['name'].split('_')[0]
     # UNDO THIS LATER
-    # del best_model_params['name'], best_model_params['best_iteration'] 
+    del best_model_params['name'], best_model_params['best_iteration'] 
     return model, best_model_params
 
 def getBucketsNumber(path_to_datasets):
@@ -131,9 +131,10 @@ def buildResults(path_to_results, results_list):
     return results_list
 
 def storeResults(results_list, path_to_config_file):
-    store_path = path_to_config_file[:path_to_config_file.rfind('/')+1]
+    store_path = path_to_config_file[:path_to_config_file.rfind('/')]
+    os.mkdir(f'{store_path}/results/')
     for result_df, metric in zip(results_list, ('nDCG', 'Precision', 'Recall') ): 
-        result_df.to_csv(f'{store_path}{metric}_results_matrix.csv')
+        result_df.to_csv(f'{store_path}/results/{metric}_results_matrix.csv')
     
 
 if __name__ == '__main__':

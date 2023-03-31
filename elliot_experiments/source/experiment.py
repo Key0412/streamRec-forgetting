@@ -1,5 +1,5 @@
 from sys import path
-path.insert(0, '/home/kpfra/streamRec-forgetting/notebooks/elliot_experiments/')
+path.insert(0, '/home/kpfra/streamRec-forgetting/elliot_experiments/')
 
 from source import _elliot_utils
 from elliot.run import run_experiment
@@ -14,12 +14,11 @@ device_lib.list_local_devices()
 def run(path_init_config_file:str, path_to_datasets:str) -> None:
     '''
     path_init_config_file: path to .yml config file for train test of bucket 0 holdout 0.
-    \tThe name string must contain the bucket and holdout indexes in the format: _b0_h0
-    path_to_datasets: path to train/test datasets folder.
     \tThe datasets' name strings must contain the bucket and holdout indexes in the format: _b0 and _h0.
     \tThe datasets' name strings must be equal to the ones passed to the .yml config file
     '''
     path_to_config_file = path_init_config_file
+    path_to_datasets=path_to_config_file[:path_to_config_file.rfind('/')+1] + 'datasets/'
     n_buckets = _elliot_utils.getBucketsNumber(path_to_datasets)
     results_list = []
     for nb in range(n_buckets):
