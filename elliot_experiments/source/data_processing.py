@@ -2,7 +2,7 @@ import os
 
 import pandas as pd 
 
-def process_sample(data_path, path_to_config_file, user_col, item_col, date_conversion_function, test_run=True):
+def process_sample(data_path:str, path_to_datasets:str, user_col:str, item_col:str, date_conversion_function, test_run:bool=True):
     data = pd.read_csv(data_path)
     # CODE TO GET LAST N INTERACTIONS FROM EACH USER AS HOLDOUT
     # IF USER DID NOT INTERACT WITH AT LEAST N+1 ITEMS, THEN IT IS NOT USED FOR HOLDOUT
@@ -47,7 +47,6 @@ def process_sample(data_path, path_to_config_file, user_col, item_col, date_conv
     print('shape of buckets', [b.shape for b in buckets])
     print('shape of holdouts', [h.shape for h in holdouts])
 
-    path_to_datasets=path_to_config_file[:path_to_config_file.rfind('/')+1] + 'datasets/'
     if not os.path.isdir(path_to_datasets):
         os.mkdir(path_to_datasets)
 

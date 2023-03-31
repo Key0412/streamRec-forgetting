@@ -18,7 +18,6 @@ def run(path_init_config_file:str, path_to_datasets:str) -> None:
     \tThe datasets' name strings must be equal to the ones passed to the .yml config file
     '''
     path_to_config_file = path_init_config_file
-    path_to_datasets=path_to_config_file[:path_to_config_file.rfind('/')+1] + 'datasets/'
     n_buckets = _elliot_utils.getBucketsNumber(path_to_datasets)
     results_list = []
     for nb in range(n_buckets):
@@ -50,5 +49,5 @@ def run(path_init_config_file:str, path_to_datasets:str) -> None:
 
 if __name__ == '__main__':
     path_to_config_file = "/home/kpfra/streamRec-forgetting/notebooks/elliot_experiments/elliot_example/elliot_example_configuration_b0_h0.yml"
-    path_to_csv = '/home/kpfra/streamRec-forgetting/notebooks/elliot_experiments/elliot_example'
-    run(path_to_config_file, path_to_csv)
+    path_to_datasets = '/home/kpfra/streamRec-forgetting/elliot_experiments/elliot_example/datasets/'
+    run(path_to_config_file, path_to_datasets)

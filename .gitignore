@@ -7,11 +7,14 @@ temp/
 *.csv
 notebooks/output/amazonbooks_dump/
 notebooks/output/amazonkindle_dump/
-sampled_movielens_bucket0_holdout0
 results_b0_h0
 results_b0_h1
 *_results_*
-*_example_configuration_*
+*_example_configuration_* 
+*_config.yml* 
+
+!elliot_example_configuration_b0_h0.yml
+!ml_multivae_b0_h0_config.yml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
