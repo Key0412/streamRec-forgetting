@@ -3,6 +3,9 @@ import json
 import yaml
 import sys
 
+import pandas as pd
+import numpy as np
+
 '''
 Utilities to run elliot experiments over buckets and holdouts.
 '''
@@ -15,7 +18,8 @@ def getBestModelParams(path_to_results):
             break
     best_model_params = best_model_info[1]['configuration'] # type: ignore
     model = best_model_params['name'].split('_')[0]
-    del best_model_params['name'], best_model_params['best_iteration']
+    # UNDO THIS LATER
+    # del best_model_params['name'], best_model_params['best_iteration'] 
     return model, best_model_params
 
 def getBucketsNumber(path_to_datasets):
@@ -35,6 +39,15 @@ def setNewConfig( path_to_config_file, model_tup=None):
     bucket_idx = int(path_to_config_file[path_to_config_file.find('_b')+2]) # index of the bucket
     holdout_idx = int(path_to_config_file[path_to_config_file.find('_h')+2]) # index of the last holdout tested
     
+    slice_pos = yaml_file['experiment']['path_output_rec_result'].rfind('/') + 1
+    path_to_results = yaml_file['experiment']['path_output_rec_result'][:slice_pos]
+    print('\n', f'Results will be stored in {path_to_results}'.center(100,'*'), end='\n')    
+
+    try:
+        model, best_model_params = model_tup # type: ignore
+    except:
+        model, best_model_params = getBestModelParams(path_to_results)
+
     if bucket_idx == 0:
         holdout_idx = str(holdout_idx + 1)
     elif holdout_idx == bucket_idx:
@@ -45,18 +58,8 @@ def setNewConfig( path_to_config_file, model_tup=None):
         else:
             holdout_idx = str(holdout_idx + 1)
     else:
-        holdout_idx = str(holdout_idx + 1 )
-
-    slice_pos = yaml_file['experiment']['path_output_rec_result'].rfind('/') + 1
-    path_to_results = yaml_file['experiment']['path_output_rec_result'][:slice_pos]
-    print('\n', f'Results will be stored in {path_to_results}'.center(100,'*'), end='\n')    
-    
-    try:
-        model, best_model_params = model_tup # type: ignore
-    except:
-        model, best_model_params = getBestModelParams(path_to_results)
+        holdout_idx = str(holdout_idx + 1 )    
         
-
     # Update variables and files according to new holdout idx
     path_to_config_file = path_to_config_file[:path_to_config_file.find('_h')+2] + holdout_idx + path_to_config_file[path_to_config_file.find('_h')+3:]
     # update test path
@@ -74,7 +77,7 @@ def setNewConfig( path_to_config_file, model_tup=None):
     with open(path_to_config_file, "w") as stream:
         yaml.safe_dump(yaml_file, stream)
 
-    return path_to_config_file, (model, best_model_params)
+    return path_to_config_file, path_to_results, (model, best_model_params)
 
 def setNewBucketConfig(path_to_config_file, bucket_idx):
     with open(path_to_config_file, "r") as stream:
@@ -107,8 +110,43 @@ def setNewBucketConfig(path_to_config_file, bucket_idx):
 
     return path_to_config_file # type: ignore
 
+def buildResults(path_to_results, results_list):
+    result_files = []
+
+    for item in os.listdir(path_to_results + 'performance/'):
+        if f'_b' in item: # if tag for bucket and holdout index are present, read results file
+            result_files.append(item)
+    if not results_list:
+        empty_results = pd.DataFrame( np.zeros(shape = (len(result_files), len(result_files))) )
+        results_list = [empty_results.copy(), empty_results.copy(), empty_results.copy()]
+
+    for item in result_files:
+        bucket_idx = int(item[item.find('_b')+2]) # index of the bucket
+        holdout_idx = int(item[item.find('_h')+2]) # index of the holdout tested
+        df = pd.read_csv(path_to_results + 'performance/' + item, sep='\t', index_col=False).fillna(0)        
+        results_list[0].iloc[bucket_idx, holdout_idx] = df.loc[0, 'nDCG']
+        results_list[1].iloc[bucket_idx, holdout_idx] = df.loc[0, 'Precision']
+        results_list[2].iloc[bucket_idx, holdout_idx] = df.loc[0, 'Recall']
+
+    return results_list
+
+def storeResults(results_list, path_to_config_file):
+    store_path = path_to_config_file[:path_to_config_file.rfind('/')+1]
+    for result_df, metric in zip(results_list, ('nDCG', 'Precision', 'Recall') ): 
+        result_df.to_csv(f'{store_path}{metric}_results_matrix.csv')
+    
+
 if __name__ == '__main__':
     path_to_config_file = "/home/kpfra/streamRec-forgetting/notebooks/elliot_experiments/elliot_example/elliot_example_configuration_b0_h0.yml"
-    print(setNewBucketConfig(path_to_config_file, 1))
-    print(setNewBucketConfig(path_to_config_file, 2))
-    print(setNewBucketConfig(path_to_config_file, 10))
+    # print(setNewBucketConfig(path_to_config_file, 1))
+    # print(setNewBucketConfig(path_to_config_file, 2))
+    # print(setNewBucketConfig(path_to_config_file, 10))
+    # path_to_config_file, path_to_results, (model, best_model_params) = setNewConfig( path_to_config_file, model_tup=None)
+    # buildResults(path_to_results, results_list=None)
+    path_to_results = '/home/kpfra/streamRec-forgetting/MultiVae_Movielens_results_b0_h0/'
+    results_list = buildResults(path_to_results, results_list=None)
+    path_to_results = '/home/kpfra/streamRec-forgetting/MultiVae_Movielens_results_b1_h1/'
+    results_list = buildResults(path_to_results, results_list=results_list)
+    path_to_results = '/home/kpfra/streamRec-forgetting/MultiVae_Movielens_results_b2_h2/'
+    results_list = buildResults(path_to_results, results_list=results_list)
+    storeResults(results_list, path_to_config_file)
