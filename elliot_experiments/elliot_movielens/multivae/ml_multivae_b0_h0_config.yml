@@ -1,6 +1,10 @@
 experiment:
+  # NEW PROPERTY
+  evaluate_seen_items: True
+
   gpu: 1 
   dataset: sampled_movielens_b0_h0
+  align_side_with_train: False
   data_config:
     strategy: fixed # assumes that our data has been previously split into training/validation/test sets or training/test sets.
     train_path: /home/kpfra/streamRec-forgetting/elliot_experiments/elliot_movielens/datasets/movielens_b0.csv

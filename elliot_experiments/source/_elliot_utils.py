@@ -2,6 +2,7 @@ import os
 import json
 import yaml
 import sys
+import shutil
 
 import pandas as pd
 import numpy as np
@@ -19,7 +20,10 @@ def getBestModelParams(path_to_results):
     best_model_params = best_model_info[1]['configuration'] # type: ignore
     model = best_model_params['name'].split('_')[0]
     # UNDO THIS LATER
-    del best_model_params['name'], best_model_params['best_iteration'] 
+    try:
+        del best_model_params['name'], best_model_params['best_iteration'] 
+    except KeyError as e:
+        sys.stderr.write(f'Not able to remove {e} parameter. Possible cause: experiment being rerun over existing performance results.')
     return model, best_model_params
 
 def getBucketsNumber(path_to_datasets):
@@ -132,7 +136,21 @@ def buildResults(path_to_results, results_list):
 
 def storeResults(results_list, path_to_config_file):
     store_path = path_to_config_file[:path_to_config_file.rfind('/')]
-    os.mkdir(f'{store_path}/results/')
+    try:
+        os.mkdir(f'{store_path}/results/')
+    except FileExistsError as fee:
+        sys.stderr.write(f'{os.strerror(fee.errno)}: {fee}\n')
+        sys.stderr.write('Possible cause: experiment being rerun over existing results.\n')
+        while True:
+            ch = input('Substitute results? y/n').lower()
+            if ch=='y':
+                shutil.rmtree(f'{store_path}/results/')
+                os.mkdir(f'{store_path}/results/')
+                break
+            if ch=='n':
+                print('End of routine.')
+                return   
+        
     for result_df, metric in zip(results_list, ('nDCG', 'Precision', 'Recall') ): 
         result_df.to_csv(f'{store_path}/results/{metric}_results_matrix.csv')
     
